@@ -1,0 +1,17 @@
+dn: uid=bogs,ou=People,dc= cartrack,dc=local
+objectClass: top
+objectClass: account
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: bogs
+uid: bogs
+uidNumber: 9999
+gidNumber: 100
+homeDirectory: /home/bogs
+loginShell: /bin/bash
+gecos: bogs [Admin (at)  cartrack]
+userPassword: {crypt}x
+shadowLastChange: 17058
+shadowMin: 0
+shadowMax: 99999
+shadowWarning: 7

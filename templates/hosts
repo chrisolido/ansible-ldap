@@ -1,0 +1,11 @@
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.207.242 sg1-dev-ldap-01.cartrack.local  sg1-dev-ldap-01	    	    
+192.168.207.240 sg1-dev-mon-01.cartrack.local   sg1-dev-mon-01   	    
+192.168.207.241 sg1-dev-elk-01.cartrack.local   sg1-dev-elk-01   
+192.168.207.243 sg1-dev-awx-01.cartrack.local   sg1-dev-awx-01            
+192.168.207.244 sg1-dev-k8s-01.cartrack.local   sg1-dev-k8s-01            
+192.168.207.245 sg1-dev-k8s-02.cartrack.local   sg1-dev-k8s-02            
+192.168.207.246 sg1-dev-k8s-03.cartrack.local   sg1-dev-k8s-03
+
+

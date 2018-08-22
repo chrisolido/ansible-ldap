@@ -1,1 +1,1 @@
-# ansible-ldap
+# Ansible playbook to deploy/manage LDAP with phpLDAPAdmin

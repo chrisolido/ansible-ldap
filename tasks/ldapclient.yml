@@ -1,0 +1,20 @@
+---
+tasks:
+  - name: Install the necessary LDAP client packages on the client machine
+    yum: 
+      name: "{{ packages }}"
+    vars:
+      packages: 
+        - openldap-clients 
+        - nss-pam-ldapd
+    become: true
+  
+  - name:  Add the client machine to LDAP server for single sign-on
+    command: authconfig --enableldap --enableldapauth --ldapserver=192.168.207.242 --ldapbasedn="dc=cartrack,dc=local" --enablemkhomedir --update
+    become: true
+  
+  - name: Restart the LDAP client service
+    command: systemctl restart  nslcd 
+    become: true
+
+  

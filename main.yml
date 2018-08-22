@@ -1,0 +1,9 @@
+---
+- hosts: all
+  gather_facts: no
+  tasks:
+
+    - import_playbook: ldapserver.yml
+    - import_playbook: phpldap.yml
+    - import_playbook: ldapclient.yml
+

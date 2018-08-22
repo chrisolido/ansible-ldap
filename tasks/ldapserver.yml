@@ -1,0 +1,123 @@
+---
+tasks:
+  - name: Make an host entry on each machine in /etc/hosts
+    template:
+      src:  template/hosts
+      dest: /etc/hosts
+    become: true
+
+  - name: Install OpenLDAP Packages
+    yum: 
+      name: "{{ packages }}"
+    vars:
+      packages:
+        - openldap 
+        - compat-openldap 
+        - openldap-clients 
+        - openldap-servers 
+        - openldap-servers-sql 
+        - openldap-devel
+    become: true
+
+  - name: Start the LDAP service and enable it for the auto start of service on system boot
+    systemd:
+      name: slapd
+        state: started
+        daemon_reload: yes
+    become: true 
+
+  - name: Setup LDAP admin password
+    shell: slappasswd -s {{ LDPPASSWORD }}
+    register: root_password 
+
+  - name: Configure OpenLDAP db.ldif file 
+    template:
+      src: template/db.ldif
+      dest: ~/
+    become: true
+  
+  - name: Send the configuration db.ldif to the LDAP server
+    command: ldapmodify -Y EXTERNAL  -H ldapi:/// -f db.ldif
+    become: true
+  
+  - name: Configure OpenLDAP monitor.ldif file
+    template:
+      src: template/monitor.ldif
+      dest: ~/
+    become: true
+
+  - name: Send the configuration monitor.ldif to the LDAP server
+    command: ldapmodify -Y EXTERNAL  -H ldapi:/// -f monitor.ldif
+    become: true
+
+  - name: Set up LDAP database
+    command: cp /usr/share/openldap-servers/DB_CONFIG.example /var/lib/ldap/DB_CONFIG
+    become: true
+
+  - name: Chage owner of teh files copied
+    command: chown ldap:ldap /var/lib/ldap/*
+    become: true
+
+  - name: Add the cosine and nis LDAP schemas
+    command: "{{ item }}"
+    with_items:
+      - ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/cosine.ldif
+      - ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/nis.ldif 
+      - ldapadd -Y EXTERNAL -H ldapi:/// -f /etc/openldap/schema/inetorgperson.ldif
+    become: true
+
+  - name: Configure OpenLDAP base.ldif file 
+    template:
+      src: template/base.ldif
+      dest: ~/
+    become: true 
+  
+  - name: Send the configuration base.ldif to the LDAP server
+    expect:
+      command: ldapadd -x -W -D "cn=ldapadm,dc=cartrack,dc=local" -f base.ldif
+      responses:
+        (?i)password: "{{ LDPPASSWORD }}"
+    become: true
+  
+  - name: Create LDAP user
+    template:
+      src: template/bogs.ldif
+      dest: ~/
+    become: true 
+  
+  - name: Create a new user called Bogs in OpenLDAP directory
+    expect:
+      command: ldapadd -x -W -D "cn=ldapadm,dc=cartrack,dc=local" -f bogs.ldif
+      responses:
+        (?i)password: "{{ LDPPASSWORD }}"
+    become: true
+  
+  - name: Assign password to User
+    command: ldappasswd -s {{ USERPASSWORD }} -W -D "cn=ldapadm,dc=cartrack,dc=local" -x "uid=bogs,ou=People,dc=cartrack,dc=local"
+    become: true
+
+  - name: Add the LDAP service to the firewall (TCP 389)
+    command: "{{ item }}"
+    with_items:
+      - firewall-cmd --permanent --add-service=ldap
+      - firewall-cmd --reload
+    become: true 
+  
+  - name: Look for local4.* /var/log/ldap.log
+    shell: grep "^local4" /etc/rsyslog.conf
+    register: register_grep
+
+  - name: Enable LDAP logging
+    lineinfile:
+      dest: /etc/rsyslog.conf
+      line: local4.* /var/log/ldap.log
+      state: present
+      create: yes
+      when: test_grep.stdout != ""
+    become: true
+  
+  - name: Restart the rsyslog service
+    raw: systemctl restart rsyslog
+    become: true
+
+  

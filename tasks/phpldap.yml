@@ -1,0 +1,46 @@
+---
+- tasks:
+    - name: Enable EPEL repository
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - epel-release  
+      become: true
+
+    - name: Enable EPEL repository
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - phpldapadmin  
+      become: true
+
+    - name: Copy phpldapadmin.conf
+      template:
+        src: template/phpldapadmin.conf
+        dest: /etc/httpd/conf.d/phpldapadmin.conf
+      become: true
+    
+    - name: Restart httpd
+      raw: systemctl restart httpd.service
+      become: true
+    
+    - name: Configure the FirewallD to allow external machines to access the dashboard 
+      command: "{{ item }}"
+      with_items:
+      - firewall-cmd --permanent --zone=public --add-service=http
+      - firewall-cmd --reload
+      - setsebool -P httpd_can_connect_ldap on
+    become: true
+
+    - name: Copy config.php
+      template:
+        src: template/config.php
+        dest: /etc/phpldapadmin/config.php
+      become: true
+    
+    
+    
+
+

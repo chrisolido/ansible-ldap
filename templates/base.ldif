@@ -1,0 +1,17 @@
+dn: dc= cartrack,dc=local
+dc:  cartrack
+objectClass: top
+objectClass: domain
+
+dn: cn=ldapadm ,dc= cartrack,dc=local
+objectClass: organizationalRole
+cn: ldapadm
+description: LDAP Manager
+
+dn: ou=People,dc= cartrack,dc=local
+objectClass: organizationalUnit
+ou: People
+
+dn: ou=Group,dc= cartrack,dc=local
+objectClass: organizationalUnit
+ou: Group
